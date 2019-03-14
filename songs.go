@@ -62,7 +62,7 @@ func addSong(c *gin.Context) {
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	_, err = db.Exec("INSERT INTO songs(name, url, originalviews, latestviews) VALUES (?, ?, ?, ?);",
+	_, err = db.Exec("INSERT INTO songs(name, url, originalviews, latestviews) VALUES ($1, $2, $3, $4);",
 		songName, "www.youtube.com", 0, 1)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
@@ -71,7 +71,7 @@ func addSong(c *gin.Context) {
 	}
 	c.String(
 		http.StatusCreated,
-		fmt.Sprintf("Success inserting song %q", songName),
+		fmt.Sprintf("Success inserting song: %q", songName),
 	)
 }
 
