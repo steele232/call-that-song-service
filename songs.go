@@ -89,8 +89,14 @@ func addSong(c *gin.Context) {
 	)
 }
 
+type UpdateSongReq struct {
+	Auth    string
+	Url     string
+	NewName string
+}
+
 func updateSong(c *gin.Context) {
-	req := InsertSongReq{}
+	req := UpdateSongReq{}
 	err := json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
@@ -104,8 +110,8 @@ func updateSong(c *gin.Context) {
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	_, err = db.Exec("INSERT INTO songs(name, url, originalviews) VALUES ($1, $2, $3);",
-		req.Name, req.Url, req.OriginalViews)
+	_, err = db.Exec("UPDATE songs SET name = $1 WHERE url = $2;",
+		req.NewName, req.Url)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error inserting song: %q", err))
@@ -113,7 +119,7 @@ func updateSong(c *gin.Context) {
 	}
 	c.String(
 		http.StatusCreated,
-		fmt.Sprintf("Success inserting song: %q", req.Name),
+		fmt.Sprintf("Success updating song with url: %q", req.Url),
 	)
 }
 
