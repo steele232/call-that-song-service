@@ -12,7 +12,7 @@ import (
 func createSongsTableIfNotExists() error {
 
 	createTableStr :=
-		`CREATE TABLE IF NOT EXISTS songs ( id BIGSERIAL PRIMARY KEY, name VARCHAR NOT NULL, url VARCHAR NOT NULL,  originalViews INTEGER NOT NULL, latestViews INTEGER NOT NULL DEFAULT 0 );`
+		`CREATE TABLE IF NOT EXISTS songs ( id BIGSERIAL PRIMARY KEY, name VARCHAR NOT NULL, url VARCHAR NOT NULL UNIQUE,  originalViews INTEGER NOT NULL, latestViews INTEGER NOT NULL DEFAULT 0 );`
 
 	if _, err := db.Exec(createTableStr); err != nil {
 		return err
@@ -54,19 +54,14 @@ func getSongs(c *gin.Context) {
 }
 
 type InsertSongReq struct {
-	Auth          string //`json:"auth"`
-	Name          string //`json:"name"`
-	Url           string //`json:"url"`
-	OriginalViews int    //`json:"originalViews"`
+	Auth          string
+	Name          string
+	Url           string
+	OriginalViews int
 }
 
 func addSong(c *gin.Context) {
 
-	// TODO GET STUFF FROM FORM...
-	// var bodyBytes []byte
-	// if context.Request().Body != nil {
-	// 	bodyBytes, _ = ioutil.ReadAll(context.Request().Body)
-	// }
 	req := InsertSongReq{}
 	err := json.NewDecoder(c.Request.Body).Decode(&req)
 	if err != nil {
@@ -74,8 +69,6 @@ func addSong(c *gin.Context) {
 			fmt.Sprintf("Error decoding json in req body: %q", err))
 		return
 	}
-
-	songName := "Jonathan"
 
 	err = createSongsTableIfNotExists()
 	if err != nil {
@@ -92,40 +85,36 @@ func addSong(c *gin.Context) {
 	}
 	c.String(
 		http.StatusCreated,
-		fmt.Sprintf("Success inserting song: %q", songName),
+		fmt.Sprintf("Success inserting song: %q", req.Name),
 	)
 }
 
 func updateSong(c *gin.Context) {
-	err := createSongsTableIfNotExists()
+	req := InsertSongReq{}
+	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error decoding json in req body: %q", err))
+		return
+	}
+
+	err = createSongsTableIfNotExists()
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error incrementing tick: %q", err))
-		return
-	}
-
-	rows, err := db.Query("SELECT tick FROM ticks")
+	_, err = db.Exec("INSERT INTO songs(name, url, originalviews) VALUES ($1, $2, $3);",
+		req.Name, req.Url, req.OriginalViews)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error reading ticks: %q", err))
+			fmt.Sprintf("Error inserting song: %q", err))
 		return
 	}
-
-	defer rows.Close()
-	for rows.Next() {
-		var tick time.Time
-		if err := rows.Scan(&tick); err != nil {
-			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error scanning ticks: %q", err))
-			return
-		}
-		c.String(http.StatusOK, fmt.Sprintf("Read from DB: %s\n", tick.String()))
-	}
+	c.String(
+		http.StatusCreated,
+		fmt.Sprintf("Success inserting song: %q", req.Name),
+	)
 }
 
 func deleteSong(c *gin.Context) {
