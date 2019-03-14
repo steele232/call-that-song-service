@@ -8,11 +8,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func createSongsTableIfNotExists() error {
+
+	createTableStr :=
+		`CREATE TABLE IF NOT EXISTS songs ( id INTEGER PRIMARY KEY, name VARCHAR NOT NULL, url VARCHAR NOT NULL,  originalViews INTEGER NOT NULL, latestViews INTEGER NOT NULL );`
+
+	if _, err := db.Exec(createTableStr); err != nil {
+		return err
+	}
+	return nil
+}
+
 func getSongs(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
+
+	err := createSongsTableIfNotExists()
+	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
-		return
 	}
 
 	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
@@ -41,10 +53,10 @@ func getSongs(c *gin.Context) {
 }
 
 func addSong(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
+	err := createSongsTableIfNotExists()
+	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
-		return
 	}
 
 	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
@@ -73,10 +85,10 @@ func addSong(c *gin.Context) {
 }
 
 func updateSong(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
+	err := createSongsTableIfNotExists()
+	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
-		return
 	}
 
 	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
@@ -105,10 +117,10 @@ func updateSong(c *gin.Context) {
 }
 
 func deleteSong(c *gin.Context) {
-	if _, err := db.Exec("CREATE TABLE IF NOT EXISTS ticks (tick timestamp)"); err != nil {
+	err := createSongsTableIfNotExists()
+	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
-		return
 	}
 
 	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {

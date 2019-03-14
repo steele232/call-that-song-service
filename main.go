@@ -96,6 +96,7 @@ func main() {
 	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
 
+	// route funcs are in songs.go
 	router.GET("/songs", getSongs)
 	router.PUT("/songs", addSong)
 	router.POST("/songs", updateSong)
