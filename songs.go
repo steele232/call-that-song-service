@@ -11,7 +11,7 @@ import (
 func createSongsTableIfNotExists() error {
 
 	createTableStr :=
-		`CREATE TABLE IF NOT EXISTS songs ( id BIGSERIAL PRIMARY KEY, name VARCHAR NOT NULL, url VARCHAR NOT NULL,  originalViews INTEGER NOT NULL, latestViews INTEGER NOT NULL );`
+		`CREATE TABLE IF NOT EXISTS songs ( id BIGSERIAL PRIMARY KEY, name VARCHAR NOT NULL, url VARCHAR NOT NULL,  originalViews INTEGER NOT NULL, latestViews INTEGER NOT NULL DEFAULT 0 );`
 
 	if _, err := db.Exec(createTableStr); err != nil {
 		return err
@@ -53,6 +53,8 @@ func getSongs(c *gin.Context) {
 }
 
 func addSong(c *gin.Context) {
+
+	// TODO GET STUFF FROM FORM...
 
 	songName := "Jonathan"
 
