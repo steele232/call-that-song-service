@@ -96,5 +96,10 @@ func main() {
 	router.GET("/repeat", repeatFunc)
 	router.GET("/db", dbFunc)
 
+	router.GET("/songs", getSongs)
+	router.PUT("/songs", addSong)
+	router.POST("/songs", updateSong)
+	router.DELETE("/songs", deleteSong)
+
 	router.Run(":" + port)
 }
