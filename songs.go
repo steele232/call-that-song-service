@@ -71,7 +71,7 @@ func addSong(c *gin.Context) {
 	}
 	c.String(
 		http.StatusCreated,
-		fmt.Sprintf("Success inserting song %q", songName)
+		fmt.Sprintf("Success inserting song %q", songName),
 	)
 }
 
