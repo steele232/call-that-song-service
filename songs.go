@@ -54,10 +54,10 @@ func getSongs(c *gin.Context) {
 }
 
 type InsertSongReq struct {
-	auth          string
-	name          string
-	url           string
-	originalViews int
+	Auth          string //`json:"auth"`
+	Name          string //`json:"name"`
+	Url           string //`json:"url"`
+	OriginalViews int    //`json:"originalViews"`
 }
 
 func addSong(c *gin.Context) {
@@ -84,7 +84,7 @@ func addSong(c *gin.Context) {
 	}
 
 	_, err = db.Exec("INSERT INTO songs(name, url, originalviews) VALUES ($1, $2, $3);",
-		req.name, req.url, req.originalViews)
+		req.Name, req.Url, req.OriginalViews)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error inserting song: %q", err))
