@@ -123,34 +123,42 @@ func updateSong(c *gin.Context) {
 	)
 }
 
+type DeleteSongReq struct {
+	Auth string
+	Url  string
+}
+
 func deleteSong(c *gin.Context) {
-	err := createSongsTableIfNotExists()
+
+	req := DeleteSongReq{}
+	err := json.NewDecoder(c.Request.Body).Decode(&req)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error decoding json in req body: %q", err))
+		return
+	}
+
+	err = createSongsTableIfNotExists()
 	if err != nil {
 		c.String(http.StatusInternalServerError,
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error incrementing tick: %q", err))
-		return
-	}
-
-	rows, err := db.Query("SELECT tick FROM ticks")
+	err = createSongsTableIfNotExists()
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error reading ticks: %q", err))
-		return
+			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	defer rows.Close()
-	for rows.Next() {
-		var tick time.Time
-		if err := rows.Scan(&tick); err != nil {
-			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error scanning ticks: %q", err))
-			return
-		}
-		c.String(http.StatusOK, fmt.Sprintf("Read from DB: %s\n", tick.String()))
+	_, err = db.Exec("DELETE FROM songs WHERE url = $1;",
+		req.Url)
+	if err != nil {
+		c.String(http.StatusInternalServerError,
+			fmt.Sprintf("Error inserting song: %q", err))
+		return
 	}
+	c.String(
+		http.StatusCreated,
+		fmt.Sprintf("Success updating song with url: %q", req.Url),
+	)
 }
