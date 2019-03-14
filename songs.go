@@ -144,17 +144,11 @@ func deleteSong(c *gin.Context) {
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	err = createSongsTableIfNotExists()
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error creating database table: %q", err))
-	}
-
 	_, err = db.Exec("DELETE FROM songs WHERE url = $1;",
 		req.Url)
 	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error inserting song: %q", err))
+			fmt.Sprintf("Error deleting song: %q", err))
 		return
 	}
 	c.String(
