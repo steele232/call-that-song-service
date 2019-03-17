@@ -71,6 +71,8 @@ func getSongs(c *gin.Context) {
 	res := SongGetResponse{}
 	res.items = queriedRows
 
+	fmt.Printf("Res %v \n", res)
+
 	// send the string. // or JSON it??
 	c.JSON(
 		http.StatusOK,
