@@ -72,6 +72,7 @@ func getSongs(c *gin.Context) {
 	res.items = queriedRows
 
 	fmt.Printf("Res %v \n", res)
+	fmt.Print(json.Marshal(res))
 
 	// send the string. // or JSON it??
 	c.JSON(
