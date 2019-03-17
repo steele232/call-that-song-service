@@ -20,14 +20,14 @@ func createSongsTableIfNotExists() error {
 }
 
 type SongRow struct {
-	name          string
-	url           string
-	originalViews int
-	latestViews   int
+	Name          string `json:"name"`
+	Url           string `json:"url"`
+	OriginalViews int    `json:"originalViews"`
+	LatestViews   int    `json:"latestViews"`
 }
 
 type SongGetResponse struct {
-	items []SongRow
+	Items []SongRow `json:"items"`
 }
 
 func getSongs(c *gin.Context) {
@@ -54,10 +54,10 @@ func getSongs(c *gin.Context) {
 		thisRow := SongRow{}
 
 		if err := rows.Scan(
-			&thisRow.name,
-			&thisRow.url,
-			&thisRow.originalViews,
-			&thisRow.latestViews,
+			&thisRow.Name,
+			&thisRow.Url,
+			&thisRow.OriginalViews,
+			&thisRow.LatestViews,
 		); err != nil {
 			c.String(http.StatusInternalServerError,
 				fmt.Sprintf("Error scanning songs: %q", err))
@@ -69,7 +69,7 @@ func getSongs(c *gin.Context) {
 	}
 	// get list of structs marshalled into a string
 	res := SongGetResponse{}
-	res.items = queriedRows
+	res.Items = queriedRows
 
 	fmt.Printf("Res %v \n", res)
 	fmt.Print(json.Marshal(res))
