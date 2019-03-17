@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,6 +19,17 @@ func createSongsTableIfNotExists() error {
 	return nil
 }
 
+type SongRow struct {
+	name          string
+	url           string
+	originalViews int
+	latestViews   int
+}
+
+type SongGetResponse struct {
+	items []SongRow
+}
+
 func getSongs(c *gin.Context) {
 
 	err := createSongsTableIfNotExists()
@@ -28,29 +38,44 @@ func getSongs(c *gin.Context) {
 			fmt.Sprintf("Error creating database table: %q", err))
 	}
 
-	if _, err := db.Exec("INSERT INTO ticks VALUES (now())"); err != nil {
+	rows, err := db.Query("SELECT name, url, originalviews, latestviews FROM songs;")
+	if err != nil {
 		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error incrementing tick: %q", err))
+			fmt.Sprintf("Error reading songs: %q", err))
 		return
 	}
 
-	rows, err := db.Query("SELECT tick FROM ticks")
-	if err != nil {
-		c.String(http.StatusInternalServerError,
-			fmt.Sprintf("Error reading ticks: %q", err))
-		return
-	}
+	queriedRows := make([]SongRow, 0)
 
 	defer rows.Close()
 	for rows.Next() {
-		var tick time.Time
-		if err := rows.Scan(&tick); err != nil {
+
+		//read into structs...
+		thisRow := SongRow{}
+
+		if err := rows.Scan(
+			&thisRow.name,
+			&thisRow.url,
+			&thisRow.originalViews,
+			&thisRow.latestViews,
+		); err != nil {
 			c.String(http.StatusInternalServerError,
-				fmt.Sprintf("Error scanning ticks: %q", err))
+				fmt.Sprintf("Error scanning songs: %q", err))
 			return
 		}
-		c.String(http.StatusOK, fmt.Sprintf("Read from DB: %s\n", tick.String()))
+
+		// append to list of structs
+		queriedRows = append(queriedRows, thisRow)
 	}
+	// get list of structs marshalled into a string
+	res := SongGetResponse{}
+	res.items = queriedRows
+
+	// send the string. // or JSON it??
+	c.JSON(
+		http.StatusOK,
+		res,
+	)
 }
 
 type InsertSongReq struct {
